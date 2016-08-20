@@ -3,6 +3,7 @@ package ly.generalassemb.jsonparsetest;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,10 +32,14 @@ public class MainActivity extends AppCompatActivity {
     private HashMap<String, Language> languageHashMap = new HashMap<>();
     private ArrayList<EvaluationRecord> evaluationRecords = new ArrayList<>();
 
+    private TextView textView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        textView = (TextView) findViewById(R.id.textView);
 
         OkHttpClient client = new OkHttpClient();
 
@@ -58,22 +63,29 @@ public class MainActivity extends AppCompatActivity {
                     //Log.i(TAG, "onResponse: " +response.body().string());
                     String jsonString = response.body().string();
                     try {
-                        JSONObject topLevelJsonArray = new JSONObject(jsonString);
+                        JSONObject topLevelJsonObject = new JSONObject(jsonString);
 
                         // Create HashMap of block objects
-                        JSONObject blockArray = topLevelJsonArray.getJSONObject("block");
-                        Iterator keys = blockArray.keys();
+                        JSONObject blockObject = topLevelJsonObject.getJSONObject("block");
+                        Iterator keys = blockObject.keys();
+
+
+
                         while (keys.hasNext()) {
                             Object key = keys.next();
-                            JSONObject value = blockArray.getJSONObject((String) key);
+                            JSONObject value = blockObject.getJSONObject((String) key);
                             String blockName = value.getString("name");
                             blockHashMap.put((String) key, new Block(blockName));
                         }
 
+
+
+
+
                         Log.i(TAG, "The block HashMap size is: " +blockHashMap.size() );
 
                         // Create HashMap of block objects
-                        JSONObject clusterArray = topLevelJsonArray.getJSONObject("cluster");
+                        JSONObject clusterArray = topLevelJsonObject.getJSONObject("cluster");
                         Iterator clusterKeys = clusterArray.keys();
                         while (clusterKeys.hasNext()) {
                             Object key = clusterKeys.next();
@@ -94,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, "The cluster HashMap size is: " +clusterHashMap.size() );
 
                         // Create HashMap of village objects
-                        JSONObject villageArray = topLevelJsonArray.getJSONObject("village");
+                        JSONObject villageArray = topLevelJsonObject.getJSONObject("village");
                         Iterator villageKeys = villageArray.keys();
                         while (villageKeys.hasNext()) {
                             Object key = villageKeys.next();
@@ -116,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                         // Create HashMap of school objects
-                        JSONObject schoolArray = topLevelJsonArray.getJSONObject("school");
+                        JSONObject schoolArray = topLevelJsonObject.getJSONObject("school");
                         Iterator schoolKeys = schoolArray.keys();
                         while (schoolKeys.hasNext()) {
                             Object key = schoolKeys.next();
@@ -138,17 +150,26 @@ public class MainActivity extends AppCompatActivity {
 
 
                         // Create HashMap of student objects
-                        JSONObject studentArray = topLevelJsonArray.getJSONObject("student");
+                        JSONObject studentArray = topLevelJsonObject.getJSONObject("student");
+
                         Iterator studentKeys = studentArray.keys();
+
                         while (studentKeys.hasNext()) {
                             Object key = studentKeys.next();
+
                             if(null!= studentArray.getJSONObject((String) key)) {
-                                JSONObject value = studentArray.getJSONObject((String) key);
-                                String studentName = value.getString("name");
+
+
+                                JSONObject studentObject = studentArray.getJSONObject((String) key);
+                                String studentName = studentObject.getString("name");
                                 String schoolKey = null;
-                                if(!value.isNull("schoolKey")) {
-                                    schoolKey = value.getString("schoolKey");
+
+
+                                if(!studentObject.isNull("schoolKey")) {
+                                    schoolKey = studentObject.getString("schoolKey");
                                 }
+
+
                                 if(null != studentName && null != schoolKey) {
                                     studentHashMap.put((String) key, new Student(studentName, schoolKey));
                                 }
@@ -159,7 +180,8 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, "The student HashMap size is: " +studentHashMap.size() );
 
                         // Create HashMap of math objects
-                        JSONObject mathArray = topLevelJsonArray.getJSONObject("math");
+                        JSONObject mathArray = topLevelJsonObject.getJSONObject("math");
+
                         Iterator mathKeys = mathArray.keys();
                         while (mathKeys.hasNext()) {
                             Object key = mathKeys.next();
@@ -182,10 +204,12 @@ public class MainActivity extends AppCompatActivity {
                         Log.i(TAG, "The math HashMap size is: " +mathHashMap.size() );
 
                         // Create HashMap of language objects
-                        JSONObject languageArray = topLevelJsonArray.getJSONObject("language");
+                        JSONObject languageArray = topLevelJsonObject.getJSONObject("language");
                         Iterator languageKeys = languageArray.keys();
+
                         while (languageKeys.hasNext()) {
                             Object key = languageKeys.next();
+
                             if(null!= languageArray.getJSONObject((String) key)) {
                                 JSONObject value = languageArray.getJSONObject((String) key);
                                 String evaluationDate = value.getString("evaluationDate");
@@ -209,6 +233,8 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                 }
+
+
                 for (Map.Entry<String, Math> mathEntry : mathHashMap.entrySet())
                 {
 
@@ -223,6 +249,7 @@ public class MainActivity extends AppCompatActivity {
 
                     Student currentStudent =
                             studentHashMap.get(mathEntry.getValue().getStudentKey());
+
                     studentName = currentStudent.getName();
 
                     School currentSchool = schoolHashMap.get(currentStudent.getSchoolKey());
@@ -246,6 +273,8 @@ public class MainActivity extends AppCompatActivity {
                                     blockName, evaluationDate, evaluationType, mathLevel);
 
                     evaluationRecords.add(evaluationRecord);
+
+
 
                     //System.out.println(mathEntry.getKey() + "/" + mathEntry.getValue());
                 }
@@ -292,7 +321,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 for (EvaluationRecord record : evaluationRecords) {
-                    Log.i(TAG, "onResponse: " + record.getEvaluationRow());
+                    Log.i(TAG, record.getEvaluationRow());
                 }
 
             }
